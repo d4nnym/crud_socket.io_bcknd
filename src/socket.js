@@ -1,14 +1,44 @@
-import Note from './models/Note.js'
+import User from "./models/User.js";
+import {createUser,getUsers,getUser} from "./controllers/user.controller.js"
 
 
-export default (io) =>{
+export default (io) => {
 
-  io.on("connection",()=>{
-    console.log("Nueva conexión");
-  })
+  io.on("connection", (socket) => {
 
+    console.log("Nueva conexión",socket.id);
 
-  /*
+    // cargar todos los usuarios
+    const emitUsers = async () => {
+      const users = await getUsers();
+      io.emit("server:users", users);
+      
+    };
+
+    emitUsers() // emitir usuarios
+
+    // cargar usuario por id
+    const emitUser = async (data) => {
+      const user = await getUser(data);
+      io.emit("server:user", user);
+    }
+
+    // crear usuario
+    socket.on("client:createuser", createUser);
+    // obtener usuario
+    socket.on("client:user",emitUser);
+
+    socket.on("disconnect", () => {
+      console.log("Usuario desconectado",socket.id);
+    });
+    
+  });
+
+  
+
+};
+
+/*
 
   io.on("connection",(socket)=>{
 
@@ -28,5 +58,3 @@ export default (io) =>{
 
     console.log("Nueva coneción");
   });  */
-
-}
